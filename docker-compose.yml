@@ -1,0 +1,35 @@
+# docker-compose.yml
+
+version: '3'
+
+services:
+  web:
+    build: ./nginx
+    restart: always
+    volumes:
+      - ./src:/var/www/html      
+    ports:
+      - "8082:80"
+    depends_on:
+      - app
+
+  app:
+    build: ./php
+    volumes:
+      - ./src:/var/www/html
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    restart: always
+    build: ./mysql
+    volumes:
+    - mysql_data:/var/lib/mysql
+    env_file:
+      - ./mysql/.env
+    ports:
+      - 3308:3306
+
+volumes:
+  mysql_data:
