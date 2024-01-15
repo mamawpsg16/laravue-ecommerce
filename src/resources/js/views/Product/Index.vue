@@ -1,6 +1,6 @@
 <template>
-    <Create @loadUpdatedStudents="students"/>
-    <!-- <Show @loadUpdatedStudents="students" :student_details="student_details"/> -->
+    <Create @loadUpdatedProducts="products"/>
+    <Show @loadUpdatedProducts="products" :product_details="product_details"/>
     <loading v-model:active="isLoading" :is-full-page="fullPage" color="#3176FF" :height="150" :weight="150" loader="dots"/>
     <div class="row">
         <div class="col-10 mx-auto my-2">
@@ -22,7 +22,7 @@
                             <i class="fa-solid fa-file-export"></i>
                         </button>
                     </template>
-                    <button type="button" class="btn btn-primary text-end me-2" data-bs-toggle="modal" data-bs-target="#student-registration-modal">
+                    <button type="button" class="btn btn-primary text-end me-2" data-bs-toggle="modal" data-bs-target="#create-product-modal">
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
@@ -31,14 +31,14 @@
                 <template #body="{ data, index }">
                     <tr>
                         <td>{{ data.name }}</td>
-                        <td>{{ data.email }}</td>
-                        <td>{{ data.date_of_birth }}</td>
-                        <td>{{ data.gender }}</td>
-                        <td>{{ data.phone_number_1 }}</td>
-                        <td>{{ data.school_year }}</td>
-                        <td>{{ data.enrollment_status }}</td>
+                        <td>{{ data.description }}</td>
+                        <td class="text-end">{{ data.price }}</td>
+                        <td class="text-end">{{ data.quantity }}</td>
+                        <td>{{ data.categories }}</td>
+                        <td>{{ data.status }}</td>
+                        <td>{{ data.created_at }}</td>
                         <td class="text-center">
-                            <button class="btn btn-sm btn-primary me-2" @click="viewStudentDetails(data.id)"><i class="fa-solid fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary me-2" @click="viewProductDetails(data.id)"><i class="fa-solid fa-eye"></i></button>
                             <button class="btn btn-sm btn-danger" @click="deleteConfirmation(data.id, index)"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
@@ -60,7 +60,7 @@ import Loading from 'vue-loading-overlay';
 import * as XLSX from 'xlsx';
 
     export default {
-        name:'Registration Index',
+        name:'Product Index',
         data(){
             return{
                 isExportAll:false,
@@ -72,33 +72,33 @@ import * as XLSX from 'xlsx';
                         sort:''
                     },
                     {
-                        name:'Email',
-                        field:'email',
+                        name:'Description',
+                        field:'description',
                         sort:''
                     },
                     {
-                        name:'Birth Date',
-                        field:'date_of_birth',
+                        name:'Price',
+                        field:'price',
                         sort:''
                     },
                     {
-                        name:'Gender',
-                        field:'gender',
+                        name:'Quantity',
+                        field:'quantity',
                         sort:''
                     },
                     {
-                        name:'Phone #',
-                        field:'phone_number_1',
+                        name:'Categories',
+                        field:'categories',
                         sort:''
                     },
                     {
-                        name:'School Year',
-                        field:'school_year',
+                        name:'Status',
+                        field:'status',
                         sort:''
                     },
                     {
-                        name:'Enrollment Status',
-                        field:'enrollment_status',
+                        name:'Created At',
+                        field:'created_at',
                         sort:''
                     },
                     {
@@ -107,7 +107,7 @@ import * as XLSX from 'xlsx';
                         sort:''
                     }
                 ],
-                student_details:null,
+                product_details:null,
                 auth_token: `Bearer ${localStorage.getItem('auth-token')}`,
                 isLoading: false,
                 fullPage: false
@@ -121,78 +121,50 @@ import * as XLSX from 'xlsx';
             Loading
         },
         async created(){
-            await this.students();
+            await this.products();  
         },
         methods:{
-            async students(){
-                await axios.get('/api/student', { 
+            async products(){
+                await axios.get('/api/products', { 
                     headers: {
                         Authorization: this.auth_token
                     }
                 })
                 .then((response) => {
-                    const { students } = response.data;
-                    const data = students?.map(student=>{
-                        const middle_name = student.middle_name ? `${ titleCase(student.middle_name)}.` : '';
-                        return {
-                            ...student,
-                            name: `${ titleCase(student.first_name)} ${middle_name} ${ titleCase(student.last_name) }`,
-                            date_of_birth: formatDate(undefined, student.date_of_birth, 'date'),
-                            gender: student.gender.name,
-                            school_year: student.enrollments[0].school_year.name,
-                            enrollment_status: student.enrollments[0].status
-                        }
-                    });
+                    console.log("🚀 ~ .then ~ response:", response)
+                    const { products } = response.data;
 
-                    this.data = data;
+                    const product_details = products.map(product => {
+                        return {
+                            ...product,
+                            status:product.active ? 'Active' : 'Inactive',
+                            created_at: formatDate(undefined, product.created_at, 'date'),
+                        }
+                    })
+                    
+                    this.data = product_details;
                 }).catch((error) =>{
                     console.log(error,'ERROR');
                 });
             },
 
-            async viewStudentDetails(student_id){
-                const id = document.getElementById('student-details-modal');
+            async viewProductDetails(product_id){
+                const id = document.getElementById('product-details-modal');
                 const modal = bootstrap.Modal.getOrCreateInstance(id);
                 this.isLoading = true;
-                await axios.get(`/api/student/${student_id}`, {
+                await axios.get(`/api/products/${product_id}`, {
                     headers:{
                         Authorization: this.auth_token
                     }
                 }).then((response) => {
-                    const { student } = response.data;
+                    const { product } = response.data;
                     
-                    const middle_name = student.middle_name ? `${ titleCase(student.middle_name)}.` : '';
-                    const birth_date = formatDate(undefined, student.date_of_birth, 'date');
-                    
-                    this.student_details = {
-                            ...student,
-                            name: `${ titleCase(student.first_name)} ${middle_name} ${ titleCase(student.last_name) }`,
-                            health_information:{
-                                ...student.health_information,
-                                last_health_checkup: formatDate(undefined, student.health_information.last_health_checkup, 'date'),
-                            },
-                            basic_information:{
-                                first_name:  student.first_name,
-                                middle_name: student.middle_name,
-                                last_name: student.last_name,
-                                email: student.email,
-                                phone_number_1:student.phone_number_1,
-                                phone_number_2:student.phone_number_2,
-                                date_of_birth:student.date_of_birth,
-                                date_of_birth_name: birth_date,
-                                gender_name: student.gender.name,
-                                id: student.id,
-                                school_year_name: student.enrollments[0].school_year.name,
-                                school_year: {
-                                    label:student.enrollments[0].school_year.name,
-                                    value:student.enrollments[0].school_year.id
-                                },
-                                gender: {
-                                    label:student.gender.name,
-                                    value:student.gender.id,
-                                },
-                            }
-                    }; 
+                    const product_details = {
+                            ...product,
+                            status:product.active ? 'Active' : 'Inactive',
+                            created_at: formatDate(undefined, product.created_at, 'date'),
+                        }
+                    this.product_details = product_details;
 
                 }).catch((error) => {
                     console.log(error)
@@ -202,13 +174,23 @@ import * as XLSX from 'xlsx';
                
             },
 
-            delete(student_id, index){
-                axios.delete(`/api/student/${student_id}`,{
+            delete(product_id, index){
+                SwalDefault.fire({
+                        title: '<i class="fa fa-cog fa-spin"></i>&nbsp;Deleting...',
+                        text: "Deleting product, kindly wait.",
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                });
+                axios.delete(`/api/products/${product_id}`,{
                     headers: {
                         Authorization: this.auth_token
                     }
                 }).then((response)=>{
                     const { message } = response.data;
+                    
+                    SwalDefault.close();
+
                     this.data.splice(index, 1);
                     
                     SwalDefault.fire({
@@ -222,10 +204,10 @@ import * as XLSX from 'xlsx';
                 });
             },
 
-            deleteConfirmation(student_id, index){
+            deleteConfirmation(product_id, index){
                 swalConfirmation().then((result) => {
                     if (result.isConfirmed) {
-                       this.delete(student_id, index)
+                       this.delete(product_id, index)
                     }
                 });
             },

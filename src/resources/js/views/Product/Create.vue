@@ -1,7 +1,7 @@
 <template>
-    <Modal class="modal-lg" targetModal="student-registration-modal" modaltitle="Add Product" :backdrop="true" :escKey="false">
+    <Modal class="modal-lg" targetModal="create-product-modal" modaltitle="Add Product" :backdrop="true" :escKey="false">
         <template #body>
-            <form @submit.prevent="store" class="m-3">
+            <form @submit.prevent="storeConfirmation" class="m-3" id="create-product-form">
                 <div class="row mb-3">
                     <div class="d-flex flex-column align-items-center text-end">
                         <img :src="image ?? defaultProductImage" class="img-fluid mb-4 rounded" style="height: 250px; width: 250px; border: 2px solid #ccc;" alt="Default Profile Image">
@@ -14,7 +14,7 @@
                 <div class="d-flex justify-content-end mb-3 mt-5">
                     <div class="col-4">
                         <label>Category <span class="text-danger">*</span></label>
-                        <VueMultiselect :loading="loadingCategories"  @select="onSelectCategory" @remove="onRemoveCategory" :disabled="loadingCategories" :multiple="true"   track-by="label" label="label"  :class="{ inputInvalidClass : checkInputValidity('product','categories',['required']) }" v-model="product.categories" placeholder="Select Categories"  :options="categories"></VueMultiselect>
+                        <VueMultiselect :loading="loadingCategories" :disabled="loadingCategories" :multiple="true"   track-by="label" label="label"  :class="{ inputInvalidClass : checkInputValidity('product','categories',['required']) }" v-model="product.categories" placeholder="Select Categories"  :options="categories"></VueMultiselect>
                         <div  v-if="v$.product.categories.$dirty" :class="{ 'text-danger': checkInputValidity('product','categories',['required']) }">
                             <p v-if="v$.product.categories.required.$invalid">
                                 Category is required.
@@ -64,8 +64,6 @@
                     <button type="submit" class="btn btn-primary btn btn-md btn-primary me-1 px-5">Save</button>
                 </div>
             </form>
-
-           
         </template>
     </Modal>
 </template>
@@ -179,21 +177,11 @@ import VueMultiselect from 'vue-multiselect'
                     description:null,
                     quantity:null,
                     price:null,
-                    category:null,
-                },
+                    categories:null,
+                };
+                document.querySelector('#create-product-form').reset();
                 this.v$.$reset();
-            },
 
-            onSelectCategory(selectedOption, id) {
-                this.product.categories = product.categories ?? [];
-                this.product.categories.push(selectedOption);
-            },
-
-            onRemoveCategory(removedOption, id) {
-                const index = this.product.categories.findIndex((element) => element.value == removedOption.value);
-                if (index !== -1) {
-                    this.product.categories.splice(index, 1);
-                }
             },
 
             async store(){
@@ -209,23 +197,27 @@ import VueMultiselect from 'vue-multiselect'
                     formData.append('image',this.file);
                 }
 
-                // const student = {
-                //     ...this.student,
-                //     gender_id: this.student.gender.value,
-                //     school_year_id: this.student.school_year.value,
-                //     date_of_birth: formattedDate, // Assign the formatted date string
-                // };
+                const categories = this.product.categories.map(category => category.value);
 
+                const product = {
+                    ...this.product,
+                };
+                delete product.categories;
 
-               
-                axios.post('/api/product',formData,{
+                formData.append('product', JSON.stringify(product));
+                formData.append('categories', JSON.stringify(categories));
+                
+                axios.post('/api/products',formData,{
                     headers:{
                         Authorization: this.auth_token,
                     }
                 })
                 .then((response) => {
+                    console.log("🚀 ~ .then ~ response:", response)
+                    
                     this.isSaving = false;
                     this.formReset();
+                    // return;
                     this.$emit('loadUpdatedProducts');
                     SwalDefault.fire({
                         icon: "success",
@@ -234,15 +226,19 @@ import VueMultiselect from 'vue-multiselect'
                     });
                 })
                 .catch((error) => {
-                      this.isSaving = false;
-                    console.log(error);
+                    console.log("🚀 ~ store ~ error:", error)
+                    this.isSaving = false;
+                    if(error.response.status == 422){
+                        SwalDefault.close();
+                        console.log(error.response.data,'error.response.data');
+                    }
                 });
             },
 
-            registerConfirmation(){
+            storeConfirmation(){
                 swalConfirmation().then((result) => {
                     if (result.isConfirmed) {
-                       this.register()
+                       this.store()
                     }
                 });
             },

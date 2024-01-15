@@ -11,6 +11,12 @@ class Product extends Model
     use HasFactory;
     protected $appends = ['product_image'];
 
+    protected $guarded = ['id'];
+
+    public function scopeActive($query): void
+    {
+        $query->where('active', 1);
+    }
     protected function productImage(): Attribute
     {
         $asset =  $this->image ? "/product/images/".$this->image : "/default_images/product.png";
