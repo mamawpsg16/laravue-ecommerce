@@ -94,7 +94,7 @@ import axios from 'axios';
 
                         localStorage.setItem('auth-token', authentication_token);
                         
-                        window.location.href = '/dashboard'
+                        window.location.href = '/'
                     }else if(status == 404){
                         this.isLoggingIn = false;
                         this.v$.password.$dirty = true;

@@ -24,7 +24,7 @@ router.beforeEach(async (to, from, next) => {
     if (isAuthenticated) {
         // If the user is authenticated and trying to access 'login' or 'register', redirect to '/dashboard'.
         if (isTryingToAccessRestrictedRoute) {
-            next('/dashboard');
+            next('/');
         } else {
             // Continue with the navigation for other routes.
             next();

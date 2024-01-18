@@ -23,7 +23,14 @@ export const formatDate = function(locale = undefined, date = '', format="timest
     }
     const newOptions = format == 'date' ? dateDefaultOptions : {...dateDefaultOptions, ...timestamp};
 
-    return new Intl.DateTimeFormat(locale,newOptions).format(new Date(date))
+    const formattedDate = new Intl.DateTimeFormat(locale, newOptions).format(new Date(date));
+
+    if (format === "timestamp") {
+        // Remove "at" and trim spaces
+        return formattedDate.replace(" at ", " ").trim();
+    }
+
+    return formattedDate;
 }
 export const formatCurrency = function (locale =undefined, amount = '0.00',  options = {}) {
     const style = Object.keys(options).length === 0  ? numberDefaultOptions : {...numberDefaultOptions, ...options};

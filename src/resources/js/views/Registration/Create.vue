@@ -514,21 +514,24 @@ import debounce from 'lodash/debounce';
             },
 
             validateStudentDetails(){
-                this.v$.student.$touch()
-                const isValid =  this.v$.student.$errors.length || this.emailExists ? false : true ;
-                return isValid;
+                // this.v$.student.$touch()
+                // const isValid =  this.v$.student.$errors.length || this.emailExists ? false : true ;
+                // return isValid;
+                return true;
             },
 
             validateGuardianDetails(){
-                this.v$.guardians.$touch()
-                const isValid =  this.v$.guardians.$errors.length ? false : true ;
-                return isValid;
+                // this.v$.guardians.$touch()
+                // const isValid =  this.v$.guardians.$errors.length ? false : true ;
+                // return isValid;
+                return true;
             },
 
             validateAddressDetails(){
-                this.v$.address_information.$touch()
-                const isValid =  this.v$.address_information.$errors.length ? false : true ;
-                return isValid;
+                // this.v$.address_information.$touch()
+                // const isValid =  this.v$.address_information.$errors.length ? false : true ;
+                // return isValid;
+                return true;
             },
 
             uploadImage(e){

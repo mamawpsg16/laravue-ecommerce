@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ProductRequest extends FormRequest
+class ShopRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,18 +22,14 @@ class ProductRequest extends FormRequest
      */
     public function rules(): array
     {
-        $isUpdate = $this->route()->uri == 'api/update-product';
+        $isUpdate = $this->route()->uri == 'api/update-shop';
         
         return [
             'id' => ['sometimes', 'integer'],
             'image' => ['sometimes', 'image','nullable','mimes:jpeg,jpg,png'],
-            'product' => 'required',
-            'name' => ['required', $isUpdate ? Rule::unique('products')->ignore($this->id) : 'unique:products'],
+            'name' => ['required', $isUpdate ? Rule::unique('shops')->ignore($this->id) : 'unique:shops'],
             'description' => ['nullable'],
-            'price' => 'required',
-            'quantity' => 'required',
-            'categories' => ['required', 'array'],
-            'shop_id' => ['required'],
+            'shop' => 'required',
         ];
       
     }
@@ -42,9 +38,7 @@ class ProductRequest extends FormRequest
     {
 
         $this->merge([
-            'product'    => json_decode($this->product,true),
-            'categories' => json_decode($this->categories),
+            'shop'    => json_decode($this->shop,true),
         ]);
-
     }
 }

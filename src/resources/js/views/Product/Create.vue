@@ -4,17 +4,28 @@
             <form @submit.prevent="storeConfirmation" class="m-3" id="create-product-form">
                 <div class="row mb-3">
                     <div class="d-flex flex-column align-items-center text-end">
-                        <img :src="image ?? defaultProductImage" class="img-fluid mb-4 rounded" style="height: 250px; width: 250px; border: 2px solid #ccc;" alt="Default Profile Image">
+                        <img :src="image ?? defaultProductImage" class="img-fluid mb-4 rounded" style="height: 280px; width: 280px; border: 2px solid #ccc;" alt="Default Profile Image">
                         <div class="d-flex justify-content-center align-items-center">
-                            <input class="form-control object-fit-cover " type="file" id="formFile" style="width: 250px;" @change="uploadImage" accept="image/*">
+                            <input class="form-control object-fit-cover " type="file" id="formFile" style="width: 280px;" @change="uploadImage" accept="image/*">
                             <button v-if="image" type="button" class="ms-2 btn btn-sm btn-danger" @click="removeImage"><i class="fa-solid fa-trash"></i></button>
                         </div>
                     </div>
                 </div>
-                <div class="d-flex justify-content-end mb-3 mt-5">
-                    <div class="col-4">
-                        <label>Category <span class="text-danger">*</span></label>
-                        <VueMultiselect :loading="loadingCategories" :disabled="loadingCategories" :multiple="true"   track-by="label" label="label"  :class="{ inputInvalidClass : checkInputValidity('product','categories',['required']) }" v-model="product.categories" placeholder="Select Categories"  :options="categories"></VueMultiselect>
+                <div class="row mt-5 mb-3">
+                    <div class="col-6 ms-auto">
+                        <label>Shop <span class="text-danger">*</span></label>
+                        <VueMultiselect :loading="loadingShops" :disabled="loadingShops"   track-by="label" label="label"  :class="{ inputInvalidClass : checkInputValidity('product','shop',['required']) }" v-model="product.shop" placeholder="Select a shop"  :options="shops"></VueMultiselect>
+                        <div  v-if="v$.product.shop.$dirty" :class="{ 'text-danger': checkInputValidity('product','shop',['required']) }">
+                            <p v-if="v$.product.shop.required.$invalid">
+                                Shop is required.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6 ms-auto">
+                        <label>Product Category <span class="text-danger">*</span></label>
+                        <VueMultiselect :loading="loadingCategories" :disabled="loadingCategories" :multiple="true"   track-by="label" label="label"  :class="{ inputInvalidClass : checkInputValidity('product','categories',['required']) }" v-model="product.categories" placeholder="Select a category"  :options="categories"></VueMultiselect>
                         <div  v-if="v$.product.categories.$dirty" :class="{ 'text-danger': checkInputValidity('product','categories',['required']) }">
                             <p v-if="v$.product.categories.required.$invalid">
                                 Category is required.
@@ -34,11 +45,6 @@
                     </div>
 
                     <div class="col-4">
-                        <label>Product Description</label>
-                        <Input type="text" v-model="product.description"/>
-                    </div>
-
-                    <div class="col-4">
                         <label>Product Price <span class="text-danger">*</span></label>
                         <Input type="number" step="0.01"  v-model="product.price" :class="{ inputInvalidClass : checkInputValidity('product','price',['required']) }"  required autocomplete="price" />
                         <div  v-if="v$.product.price.$dirty" :class="{ 'text-danger': checkInputValidity('product','price',['required']) }">
@@ -47,9 +53,7 @@
                             </p>
                         </div>
                     </div>
-                </div>
 
-                <div class="row mb-3">
                     <div class="col-4">
                         <label>Product Quantity<span class="text-danger">*</span></label>
                         <Input type="number" step="0.01"  v-model="product.quantity" :class="{ inputInvalidClass : checkInputValidity('product','quantity',['required']) }"  required autocomplete="quantity" />
@@ -60,7 +64,15 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <label>Product Description</label>
+                        <textarea class="form-control" rows="5" v-model="product.description"/>
+                    </div>
+                </div>
                 <div class="text-end">
+                    <!-- <button type="button" class="btn btn-md btn-secondary me-1 px-3" @click="closeModal">Close</button> -->
                     <button type="submit" class="btn btn-primary btn btn-md btn-primary me-1 px-5">Save</button>
                 </div>
             </form>
@@ -78,13 +90,14 @@ import { required } from '@vuelidate/validators';
 import defaultProduct from '@/../../public/storage/default_images/product.png';
 import { swalConfirmation, swalSuccess, swalError, SwalDefault } from '@/helpers/Notification/sweetAlert.js';
 import { checkValidity } from '@/helpers/Vuelidate/InputValidation.js';
+import { generateUniqueSlug } from '@/helpers/PartialHelpers/index.js';
 import VueMultiselect from 'vue-multiselect'
     export default {
-        name:'Student Registration',
+        name:'Product Create',
         setup () {
             return { v$: useVuelidate({ $autoDirty: true ,student: {} }) }
         },
-        emits: ['loadUpdatedStudents'],
+        emits: ['loadUpdatedProducts'],
         data(){
             return{
                 defaultProductImage: defaultProduct,
@@ -96,10 +109,13 @@ import VueMultiselect from 'vue-multiselect'
                     quantity:null,
                     price:null,
                     categories:null,
+                    shop:null,
                 },
                 isSaving:false,
                 categories:[],
+                shops:[],
                 loadingCategories:false,
+                loadingShops:false,
                 auth_token:`Bearer ${localStorage.getItem('auth-token')}`,
             }
         },
@@ -107,10 +123,10 @@ import VueMultiselect from 'vue-multiselect'
             return {
                 product: {
                     name: { required },
-                    description: { required },
                     quantity: { required },
                     price: { required },
                     categories: { required },
+                    shop: { required },
                 },
             }
         },
@@ -125,6 +141,7 @@ import VueMultiselect from 'vue-multiselect'
         },
         async created(){
             await this.getCategories()
+            await this.getShops()
         },
         methods:{
             async getCategories(){
@@ -140,6 +157,24 @@ import VueMultiselect from 'vue-multiselect'
                     this.categories = categories;
                     
                     this.loadingCategories = false;
+                })
+                .catch((error) =>{
+                    console.log(error,'error');
+                });
+            },
+            
+            async getShops(){
+                this.loadingShops = true;
+                await axios.get('/api/get-shops', { 
+                    headers: {
+                        Authorization: this.auth_token
+                    }
+                })
+                .then((response) => {
+                    const { shops } = response.data;
+                    this.shops = shops;
+                    
+                    this.loadingShops = false;
                 })
                 .catch((error) =>{
                     console.log(error,'error');
@@ -169,7 +204,7 @@ import VueMultiselect from 'vue-multiselect'
                 }
             },
 
-            formReset(){
+            resetForm(){
                 this.image = null;
                 this.file = null;
                 this.product = {
@@ -178,6 +213,7 @@ import VueMultiselect from 'vue-multiselect'
                     quantity:null,
                     price:null,
                     categories:null,
+                    shop:null,
                 };
                 document.querySelector('#create-product-form').reset();
                 this.v$.$reset();
@@ -201,23 +237,31 @@ import VueMultiselect from 'vue-multiselect'
 
                 const product = {
                     ...this.product,
+                    shop_id:this.product.shop.value,
+                    slug:generateUniqueSlug(this.product.name)
                 };
-                delete product.categories;
 
+                delete product.categories;
+                delete product.shop;
+
+
+                formData.append('name', product.name);
+                formData.append('description', product.description);
+                formData.append('price', product.price);
+                formData.append('quantity', product.quantity);
+                formData.append('shop_id', product.shop_id);
                 formData.append('product', JSON.stringify(product));
                 formData.append('categories', JSON.stringify(categories));
-                
+
                 axios.post('/api/products',formData,{
                     headers:{
                         Authorization: this.auth_token,
                     }
                 })
                 .then((response) => {
-                    console.log("🚀 ~ .then ~ response:", response)
-                    
                     this.isSaving = false;
-                    this.formReset();
-                    // return;
+                    this.resetForm();
+
                     this.$emit('loadUpdatedProducts');
                     SwalDefault.fire({
                         icon: "success",

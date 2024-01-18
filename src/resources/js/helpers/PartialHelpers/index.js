@@ -17,4 +17,19 @@ export const deepClone = function(obj) {
     // Return the cloned object or array
     return copy;
 }
+
+export const generateUniqueSlug = function(name) {
+  // Remove special characters, replace spaces with dashes, and convert to lowercase
+  const formattedShopName = name.replace(/[^\w\s]/g, '').replace(/\s+/g, '-').toLowerCase();
+
+  // Generate a random alphanumeric string for uniqueness
+  const uniqueIdentifier = Math.random().toString(36).substring(2, 8);
+
+  // Combine the name and unique identifier
+  const uniqueSlug = `${formattedShopName}-${uniqueIdentifier}`;
+
+  return uniqueSlug;
+};
+
+
   

@@ -14,7 +14,13 @@ const routes = [
     },
     {
         path: "/",
-        redirect: "/registration",
+        children: [
+            {
+              path: '',
+              name: "home",
+              component: () => import("@/views/Home/Index.vue")
+            },
+          ],
     },
     {
         path: "/login",
@@ -33,9 +39,38 @@ const routes = [
     },
     {
         path: "/product",
-        name: "product-index",
-        component: () => import("@/views/Product/Index.vue"),
+        children: [
+            {
+                path: '',
+                name: "product-index",
+                component: () => import("@/views/Product/Index.vue"),
+
+            },
+            {
+                path: ':slug',
+                name: "product-details",
+                component: () => import("@/views/Product/Details.vue")
+            },
+          ],
     },
+    {
+        path: "/shop",
+        children: [
+            {
+              path: '',
+              name: "shop-index",
+              component: () => import("@/views/Shop/Index.vue")
+            },
+            {
+                path: ':slug',
+                name: "shop-details",
+                component: () => import("@/views/Shop/Details.vue")
+            },
+          ],
+    },
+   
+
+    
  
 ];
 

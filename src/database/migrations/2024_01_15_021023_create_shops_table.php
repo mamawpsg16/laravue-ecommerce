@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('shops', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
+            $table->string('slug',255);
+            $table->string('image',255)->nullable();
             $table->string('name',100);
             $table->text('description')->nullable();
             $table->boolean('active')->default(true);

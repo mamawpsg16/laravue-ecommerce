@@ -4,7 +4,7 @@
 <script>
 export default {
   props: {
-            modelValue:String,
+            modelValue:[String, Number],
             type:{
                 type:String,
                 default:'text'

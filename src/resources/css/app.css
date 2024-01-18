@@ -10,5 +10,19 @@
 
 body {
     font-family: 'Roboto', sans-serif !important;
+    overflow-x: hidden;
 }
 
+html {
+    scroll-behavior: smooth;
+  }
+
+::-webkit-scrollbar {
+  width: 15px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 2px;
+}
+  

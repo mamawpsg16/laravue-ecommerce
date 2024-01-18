@@ -49,7 +49,7 @@ class CategoryController extends Controller
 
     public function categories(){
     
-        $categories = Category::select(['name as label', 'id as value'])->get();
+        $categories = Category::select(['name as label', 'id as value'])->active()->latest()->get();
 
         return response(['categories' => $categories]);
     }

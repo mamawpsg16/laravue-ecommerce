@@ -12,6 +12,10 @@ class Category extends Model
 
     protected $guarded = ['id'];
     
+    public function scopeActive($query): void
+    {
+        $query->where('active', 1);
+    }
     public function products(){
         return $this->belongsToMany(Product::class, 'category_product', 'category_id', 'product_id');
     }
