@@ -153,7 +153,6 @@ import VueMultiselect from 'vue-multiselect'
                 })
                 .then((response) => {
                     const { categories } = response.data;
-                    console.log("🚀 ~ .then ~ categories:", categories)
                     this.categories = categories;
                     
                     this.loadingCategories = false;
@@ -270,7 +269,6 @@ import VueMultiselect from 'vue-multiselect'
                     });
                 })
                 .catch((error) => {
-                    console.log("🚀 ~ store ~ error:", error)
                     this.isSaving = false;
                     if(error.response.status == 422){
                         SwalDefault.close();

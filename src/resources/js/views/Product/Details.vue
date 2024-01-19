@@ -2,12 +2,14 @@
     <div class="row">
         <div class="col-8 mx-auto my-2">
             <div class="card mb-2 p-3" style="height:100% !important;">
+                <div class="col-12">
+                    <span class="fw-bold">Category :</span> {{ details.categories }}
+                </div>
                 <div class="col-12 d-flex">
                     <div class="col-4">
                         <div class="card-body pt-3 pb-2 px-3 d-flex" style="height: 100%">
                             <img :src="details.product_image" class="img-fluid mb-3" style="height: 400px; width: 400px;"
                                 alt="Product Image">
-
                         </div>
                     </div>
                     <div class="col-5">
@@ -79,6 +81,7 @@
 
 <script>
 import { swalConfirmation, swalSuccess, swalError, SwalDefault } from '@/helpers/Notification/sweetAlert.js';
+import { formatDate } from '@/helpers/Formatter/index.js';
 export default {
     data() {
         return {
@@ -170,9 +173,15 @@ export default {
                 }
             }).then((response) => {
                 const { details } = response.data;
-                console.log(details, 'details');
 
-                this.details = details;
+                const formatData =   {
+                            ...details,
+                            status: details.active ? 'Active' : 'Inactive',
+                            created_at: formatDate(undefined, details.created_at),
+                            updated_at: formatDate(undefined, details.updated_at),
+                            categories: details.categories.map(category => category.name).join(', ')
+                        }
+                this.details = formatData;
                 this.isLoading = false;
             }).catch((error) => {
                 this.isLoading = false;

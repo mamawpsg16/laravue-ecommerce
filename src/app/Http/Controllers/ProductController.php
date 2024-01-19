@@ -113,7 +113,7 @@ class ProductController extends Controller
                 $category_ids = $product->categories()->pluck('category_id');
 
                 $categories = Category::select(['name as label', 'id as value'])->whereIn('id',$category_ids)->get();
-
+                
                 return response(['data' => $product->load(['shop']), 'categories' => $categories]);
             });
     
@@ -148,7 +148,7 @@ class ProductController extends Controller
 
     public function productDetails(Product $product){
          
-        return response(['details' => $product->load(['shop'])]);
+        return response(['details' => $product->load(['shop','categories'])]);
     }
 
     public function addToCart(Request $request){
@@ -189,7 +189,6 @@ class ProductController extends Controller
 
     public function searchProductExistence(Request $request){
         $products = Product::with('shop')->where('name', 'like', '%' . request('search') . '%')->get();
-
         return response(['products' => $products]);
     }
 }

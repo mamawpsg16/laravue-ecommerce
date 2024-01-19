@@ -58,9 +58,10 @@ import { swalConfirmation, SwalDefault } from '@/helpers/Notification/sweetAlert
         name:'Shop Details',
         props:{
             shop_details: [Object, Array],
-            shop_id: [Number]
+            shop_id: [Number],
+            index: [Number]
         },
-        emits: ['loadUpdatedShops'],
+        emits: ['updateShop'],
         setup () {
             return { v$: useVuelidate({ $autoDirty: true ,shop: {} }) }
         },
@@ -153,9 +154,6 @@ import { swalConfirmation, SwalDefault } from '@/helpers/Notification/sweetAlert
                 this.shop = shop;
                 this.image   = shop.shop_image; 
 
-                delete shop.created_at;
-                delete shop.updated_at;
-
                 return shop;
             },
 
@@ -200,13 +198,18 @@ import { swalConfirmation, SwalDefault } from '@/helpers/Notification/sweetAlert
                     }
                 })
                 .then((response) => {
-                    console.log(response,'response')
                     const { data } = response.data;
+
                     this.isUpdating = false;
+
                     this.edit = false;
+
                     const formattedData = this.formatData(data);
+
                     this.prevDetails = deepClone(formattedData);
-                    this.$emit('loadUpdatedShops');
+
+                    this.$emit('updateShop', this.index, formattedData);
+
                     SwalDefault.fire({
                         icon: "success",
                         text: "Succesfully updated!",

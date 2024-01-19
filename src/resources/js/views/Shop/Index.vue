@@ -1,6 +1,6 @@
 <template>
     <Create @loadUpdatedShops="getShops"/>
-    <Show @loadUpdatedShops="getShops" :shop_id="shop_id" :shop_details="shop_details"/>
+    <Show @updateShop="updateShopByIndex" :shop_id="shop_id" :shop_details="shop_details" :index="index"/>
     <loading v-model:active="isLoading" :is-full-page="fullPage" color="#3176FF" :height="150" :weight="150" loader="dots"/>
     <div class="row">
         <div class="col-10 mx-auto my-2">
@@ -37,7 +37,7 @@
                         <td>{{ data.updated_at }}</td>
                         <td class="text-center">
                             <router-link :to="`/shop/${data.slug}`" target="_blank" type="button" class="btn btn-sm btn-success me-2"><i class="fa-solid fa-store"></i></router-link> 
-                            <button class="btn btn-sm btn-primary me-2" @click="viewShopDetails(data.id)"><i class="fa-solid fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary me-2" @click="viewShopDetails(data.id, index)"><i class="fa-solid fa-eye"></i></button>
                             <button class="btn btn-sm btn-danger" @click="deleteConfirmation(data.id, index)"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
@@ -60,7 +60,7 @@ import * as XLSX from 'xlsx';
 
     export default {
         name:'Shop Index',
-        emits:['loadUpdatedShops'],
+        emits:['loadUpdatedShops','updateShop'],
         data(){
             return{
                 isExportAll:false,
@@ -101,7 +101,8 @@ import * as XLSX from 'xlsx';
                 shop_id:null,
                 auth_token: `Bearer ${localStorage.getItem('auth-token')}`,
                 isLoading: false,
-                fullPage: false
+                fullPage: false,
+                index:null
             }
         },
         components: {
@@ -139,10 +140,13 @@ import * as XLSX from 'xlsx';
                 });
             },
 
-            async viewShopDetails(shop_id){
+            async viewShopDetails(shop_id, index){
                 const id = document.getElementById('shop-details-modal');
                 const modal = bootstrap.Modal.getOrCreateInstance(id);
+
                 this.isLoading = true;
+                this.index = index;
+
                 await axios.get(`/api/shops/${shop_id}`, {
                     headers:{
                         Authorization: this.auth_token
@@ -166,8 +170,13 @@ import * as XLSX from 'xlsx';
                
             },
 
-            async visitShop(shop_id){
-                console.log('VISIT SHOP');
+            updateShopByIndex(index, data){
+                this.data[index] = {
+                            ...data,
+                            status: data.active ? 'Active' : 'Inactive',
+                            created_at: formatDate(undefined, data.created_at),
+                            updated_at: formatDate(undefined, data.updated_at),
+                        }
             },
 
             delete(shop_id, index){

@@ -1,34 +1,14 @@
 <template>
-    <loading v-model:active="isLoading" :is-full-page="fullPage" color="#3176FF" :height="150" :weight="150"
-        loader="bars" />
-    
+    <loading v-model:active="isLoading" :is-full-page="fullPage" color="#3176FF" :height="150" :weight="150" loader="bars" />
+
     <div class="row">
         <div class="col-10 mx-auto my-2">
-            <!-- <div class="col-12">
-                <div class="card p-1 mb-3">
-                    <div class="d-flex align-items-center">
-                        <img :src="shop.shop_image" class="img-fluid rounded" style="height: 100px; width: 100px;" alt="Shop Image">
-                        <div>
-                            <p>{{ shop.name }}</p>
-                            <p>{{ shop.description }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div> -->
             <div class="card-body">
                 <dataset v-slot="{ ds }" :ds-data="items" :ds-sortby="sortBy(columns)">
-                    <!-- <div class="d-flex justify-content-between align-items-center mb-4" :data-page-count="ds.dsPagecount">
-                        <div class="mb-2 mb-md-0">
-                            <dataset-show />
-                        </div>
-                        <div class="col-md-3">
-                            <dataset-search class="rounded" ds-search-placeholder="Search Product..." />
-                        </div>
-                    </div> -->
                     <dataset-item class="row mb-3">
                         <template #default="{ row, rowIndex }">
                             <div class="col-sm-6 col-md-3 mb-4">
-                                <router-link type="button" class="btn btn-md"  :to="`/product/${row.slug}`">
+                                <router-link type="button" class="btn btn-md" :to="`/product/${row.slug}`">
                                     <div class="card mb-2 p-3" style="height:100% !important;">
                                         <div class="card-body pt-3 pb-2 px-3">
                                             <div class="text-center mb-2">
@@ -37,7 +17,8 @@
                                             </div>
                                             <h3 class="card-title text-truncate mb-3" :title="`Index: ${rowIndex}`">
                                                 {{ row.name }}
-                                                <p class="card-text fs-6 text-center mt-1">{{ row.description ?? 'N/A' }}</p>
+                                                <p class="card-text fs-6 text-center mt-1">{{ row.description ?? 'N/A' }}
+                                                </p>
                                             </h3>
                                             <p class="card-text text-start fs-4" style="color:#F57224">₱{{ row.price }} </p>
                                             <p class="card-text text-end">{{ row.updated_at }}</p>
@@ -67,6 +48,7 @@ import Loading from 'vue-loading-overlay';
 import { formatDate } from '@/helpers/Formatter/index.js';
 import { Dataset, DatasetItem, DatasetInfo, DatasetPager, DatasetSearch, DatasetShow } from 'vue-dataset'
 import { sortBy, onColumnSort } from '@/helpers/Dataset/sort.js';
+import { useProductStore } from '@/stores/search.js';
 export default {
     name: 'Home',
 
@@ -88,7 +70,8 @@ export default {
                     field: 'name'
                 }
             ],
-            selected: 5
+            selected: 5,
+            product: useProductStore()
         }
     },
 
@@ -133,6 +116,24 @@ export default {
                     console.log(error, 'ERROR');
                 });
         },
+
+        formatData(items){
+            return items.map(product => {
+                return {
+                    ...product,
+                    created_at: formatDate(undefined, product.created_at),
+                    updated_at: formatDate(undefined, product.updated_at),
+                }
+            })
+        },
+    },
+
+  
+
+    watch: {
+        'product.items'(items) {
+            this.items = this.formatData(items);
+        }
     }
 }
 </script>

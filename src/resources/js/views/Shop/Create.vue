@@ -155,7 +155,6 @@ import { generateUniqueSlug } from '@/helpers/PartialHelpers/index.js';
                     });
                 })
                 .catch((error) => {
-                    console.log("🚀 ~ store ~ error:", error)
                     this.isSaving = false;
                     if(error.response.status == 422){
                         SwalDefault.close();

@@ -97,14 +97,14 @@ import { deepClone } from '@/helpers/PartialHelpers/index.js';
 import defaultProduct from '@/../../public/storage/default_images/product.png';
 import { checkValidity } from '@/helpers/Vuelidate/InputValidation.js';
 import { swalConfirmation, SwalDefault } from '@/helpers/Notification/sweetAlert.js';
-import { generateUniqueSlug } from '@/helpers/PartialHelpers/index.js';
     export default {
         name:'Product Details',
         props:{
             product_details: [Object, Array],
-            product_id: [Number]
+            product_id: [Number],
+            index: [Number]
         },
-        emits: ['loadUpdatedProducts'],
+        emits: ['updateProduct'],
         setup () {
             return { v$: useVuelidate({ $autoDirty: true ,product: {} }) }
         },
@@ -167,7 +167,6 @@ import { generateUniqueSlug } from '@/helpers/PartialHelpers/index.js';
                 })
                 .then((response) => {
                     const { categories } = response.data;
-                    console.log("🚀 ~ .then ~ categories:", categories)
                     this.categories = categories;
                     
                     this.loadingCategories = false;
@@ -249,9 +248,6 @@ import { generateUniqueSlug } from '@/helpers/PartialHelpers/index.js';
                 this.product = product;
                 this.image   = product.product_image; 
 
-                delete product.created_at;
-                delete product.updated_at;
-
                 return product;
             },
 
@@ -304,8 +300,6 @@ import { generateUniqueSlug } from '@/helpers/PartialHelpers/index.js';
                     }
                 })
                 .then((response) => {
-                    console.log(response,'response')
-
                     const { data, categories } = response.data;
 
                     this.isUpdating = false;
@@ -320,7 +314,7 @@ import { generateUniqueSlug } from '@/helpers/PartialHelpers/index.js';
 
                     this.prevDetails = deepClone(formattedData);
                     
-                    this.$emit('loadUpdatedProducts');
+                    this.$emit('updateProduct', this.index, formattedData);
 
                     SwalDefault.fire({
                         icon: "success",
